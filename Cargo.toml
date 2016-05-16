@@ -1,0 +1,8 @@
+[package]
+name = "mutual_friendly"
+version = "0.1.0"
+authors = ["Nico <Nico.Westerbeck@mailbox.tu-dresden.de>"]
+
+[dependencies]
+time = "0.1"
+rayon = "0.3.1"
