@@ -2,12 +2,12 @@ extern crate time;
 extern crate rayon;
 
 use std::io;
+use std::env;
 
 const OUTPUT_TIMES : bool = false;
 
 fn factorsums(sums: &mut [u64], start: u64) {
 	// Either split in two or calculate current part of array
-	// TODO make splitting condition depend on how big numbers are
 	if sums.len() > 50 {
 		let split = sums.len()/2;
 		let (left, right) = sums.split_at_mut(split);
@@ -33,10 +33,11 @@ fn factorsums(sums: &mut [u64], start: u64) {
 }
 
 fn find_matching(sums: &[u64], mystart: u64, myend: u64, globalstart: u64, globalend: u64) -> Vec<(u64, u64)> {
+	// Either split recursively or actually execute some work
 	if myend-mystart > 50 {
 		let split = (myend-mystart) / 2 + mystart;
 		let (mut a, b) = rayon::join(|| find_matching(sums, mystart, split, globalstart, globalend),
-								 || find_matching(sums, split, myend, globalstart, globalend));
+									 || find_matching(sums, split, myend, globalstart, globalend));
 		a.extend(b);
 		return a;
 	} else {
@@ -68,6 +69,7 @@ fn find_mut_friendly(start: u64, end: u64) {
 	
 	if OUTPUT_TIMES {println!("{} - Total", time::now() - before_search);}
 	else {
+		println!("Numbers {} to {}", start, end);
 		for item in pairs {
 			println!("{} and {} are FRIENDLY", item.0, item.1);
 		}
@@ -75,7 +77,12 @@ fn find_mut_friendly(start: u64, end: u64) {
 }
 
 fn main() {
-
+	let numthreads = if let Some(n) = env::args().nth(1) {
+		n.parse::<usize>().unwrap_or(1)
+	} else {1};
+	
+	
+	rayon::initialize(rayon::Configuration::new().set_num_threads(numthreads)).expect("Could not initialize rayon environment");
 	loop {
 		let mut input = String::new();
 		io::stdin().read_line(&mut input).expect("Could not read stdin");
